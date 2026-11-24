@@ -1,5 +1,6 @@
 import { sequelize } from '../../config/db';
 import { Book } from './Book';
+import { ExchangeRequest } from './ExchangeRequest';
 import { User } from './User';
 
 User.hasMany(Book, {
@@ -16,4 +17,8 @@ Book.belongsTo(User, {
   onUpdate: 'CASCADE',
 });
 
-export { Book, sequelize, User };
+ExchangeRequest.belongsTo(Book, { foreignKey: 'bookId', as: 'book' });
+ExchangeRequest.belongsTo(User, { foreignKey: 'requesterId', as: 'requester' });
+ExchangeRequest.belongsTo(User, { foreignKey: 'ownerId', as: 'owner' });
+
+export { Book, sequelize, User,  ExchangeRequest};

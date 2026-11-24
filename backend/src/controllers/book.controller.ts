@@ -1,8 +1,14 @@
 import { NextFunction, Request, Response } from 'express';
 import createError from 'http-errors';
 import { Op } from 'sequelize';
-import { PAGINATION, SORT_ORDER, SortOrder, USER_ROLES } from '../constants';
-import { Book, User } from '../database/models';
+import {
+  EXCHANGE_STATUS,
+  PAGINATION,
+  SORT_ORDER,
+  SortOrder,
+  USER_ROLES,
+} from '../constants';
+import { Book, ExchangeRequest, User } from '../database/models';
 import { sendExchangeRequestEmail } from '../services/mail.service';
 
 export class BookController {
@@ -238,10 +244,35 @@ export class BookController {
         return;
       }
 
+      const existingRequest = await ExchangeRequest.findOne({
+        where: {
+          bookId: book.id,
+          requesterId: sender.id,
+          status: EXCHANGE_STATUS.PENDING,
+        },
+      });
+
+      if (existingRequest) {
+        next(
+          createError(
+            409,
+            'You already have a pending exchange request for this book',
+          ),
+        );
+        return;
+      }
+
       const senderBooks = await Book.findAll({
         where: { userId: sender.id },
         attributes: ['name', 'author'],
         order: [['name', 'ASC']],
+      });
+
+      const exchangeRequest = await ExchangeRequest.create({
+        bookId: book.id,
+        requesterId: sender.id,
+        ownerId: owner.id,
+        status: EXCHANGE_STATUS.PENDING,
       });
 
       const previewUrl = await sendExchangeRequestEmail({
@@ -258,6 +289,7 @@ export class BookController {
 
       res.json({
         message: 'Exchange request email sent successfully',
+        requestId: exchangeRequest.id,
         ...(previewUrl ? { previewUrl } : {}),
       });
     } catch (err) {

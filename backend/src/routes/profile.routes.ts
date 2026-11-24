@@ -14,5 +14,7 @@ router.patch(
   validate(updateProfileSchema),
   ProfileController.updateProfile,
 );
+router.get('/requests', ProfileController.getIncomingRequests);
+router.patch('/requests/:id', ProfileController.updateRequestStatus);
 
 export default router;

@@ -29,3 +29,14 @@ export const AUTH_CONFIG = {
   JWT_AUDIENCE: 'book-trade-client',
   JWT_TOKEN_TYPE: 'access',
 } as const;
+
+export const EXCHANGE_STATUS = {
+  PENDING: 'pending',
+  ACCEPTED: 'accepted',
+  REJECTED: 'rejected',
+} as const;
+
+export const EXCHANGE_STATUS_VALUES = Object.values(EXCHANGE_STATUS);
+
+export type ExchangeStatus =
+  (typeof EXCHANGE_STATUS)[keyof typeof EXCHANGE_STATUS];
