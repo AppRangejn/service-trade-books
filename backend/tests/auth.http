@@ -1,0 +1,34 @@
+@baseUrl = http://localhost:5000/api
+
+### 1. Реєстрація
+POST {{baseUrl}}/auth/register
+Content-Type: application/json
+
+{
+  "name": "Test Reader",
+  "email": "reader@bookclub.local",
+  "password": "password123"
+}
+
+### 2. Логін
+# @name loginUser
+POST {{baseUrl}}/auth/login
+Content-Type: application/json
+
+{
+  "email": "reader@bookclub.local",
+  "password": "password123"
+}
+
+### 3. отрмати поточного юзера
+GET {{baseUrl}}/auth/me
+Authorization: Bearer {{loginUser.response.body.token}}
+
+### 4. validation error check
+POST {{baseUrl}}/auth/login
+Content-Type: application/json
+
+{
+  "email": "not-an-email",
+  "password": ""
+}

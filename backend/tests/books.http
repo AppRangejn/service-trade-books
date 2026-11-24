@@ -1,0 +1,45 @@
+@baseUrl = http://localhost:5000/api
+
+### 0. Логін для отримання JWT
+# @name loginUser
+POST {{baseUrl}}/auth/login
+Content-Type: application/json
+
+{
+  "email": "reader@bookclub.local",
+  "password": "password123"
+}
+
+### 1. Публічний каталог (search, sort ASC, pagination)
+GET {{baseUrl}}/books?search=the&sort=ASC&page=1&limit=5
+
+### 2. Отримати книжку за id
+GET {{baseUrl}}/books/12
+
+### 3. Отрмати мої книжки (/me/books)
+GET {{baseUrl}}/me/books
+Authorization: Bearer {{loginUser.response.body.token}}
+
+### 4. Додати нову книжку
+# @name createdBook
+POST {{baseUrl}}/me/books
+Authorization: Bearer {{loginUser.response.body.token}}
+Content-Type: application/json
+
+{
+  "name": "Designing Data-Intensive Applications",
+  "author": "Martin Kleppmann",
+  "photo": "https://covers.openlibrary.org/b/isbn/9781449373320-L.jpg"
+}
+
+### 5. Запит на обмін власної книги ( має бути errors )
+POST {{baseUrl}}/books/{{createdBook.response.body.book.id}}/exchange
+Authorization: Bearer {{loginUser.response.body.token}}
+
+### 6. Запит на обмін книги що належить іншому користувачеві (має бути succeed + повертати previewUrl)
+POST {{baseUrl}}/books/1/exchange
+Authorization: Bearer {{loginUser.response.body.token}}
+
+### 7. Видалити власну щойно створену книгу
+DELETE {{baseUrl}}/books/{{createdBook.response.body.book.id}}
+Authorization: Bearer {{loginUser.response.body.token}}

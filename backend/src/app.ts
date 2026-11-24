@@ -14,11 +14,14 @@ const allowedOrigins = (process.env.CLIENT_URL || 'http://localhost:3000')
   .map((origin) => origin.trim())
   .filter(Boolean);
 
+const isTestEnv = () => process.env.NODE_ENV === 'test';
+
 const authLimiter = rateLimit({
   windowMs: 15 * 60 * 1000,
   max: 20,
   standardHeaders: true,
   legacyHeaders: false,
+  skip: isTestEnv,
   message: { message: 'Too many auth attempts, please try again later' },
 });
 
@@ -27,6 +30,7 @@ const apiLimiter = rateLimit({
   max: 300,
   standardHeaders: true,
   legacyHeaders: false,
+  skip: isTestEnv,
   message: { message: 'Too many requests, please try again later' },
 });
 

@@ -1,0 +1,42 @@
+@baseUrl = http://localhost:5000/api
+
+### 0. Логін як адмін
+# @name loginAdmin
+POST {{baseUrl}}/auth/login
+Content-Type: application/json
+
+{
+  "email": "admin@bookclub.local",
+  "password": "password123"
+}
+
+### 1. Отримати всіх користувачів
+GET {{baseUrl}}/admin/users
+Authorization: Bearer {{loginAdmin.response.body.token}}
+
+### 2. Створити юзера
+# @name createdUser
+POST {{baseUrl}}/admin/users
+Authorization: Bearer {{loginAdmin.response.body.token}}
+Content-Type: application/json
+
+{
+  "name": "New Club Member",
+  "email": "member.new@bookclub.local",
+  "password": "password123",
+  "role": "User"
+}
+
+### 3. Оновити юзера
+PATCH {{baseUrl}}/admin/users/{{createdUser.response.body.user.id}}
+Authorization: Bearer {{loginAdmin.response.body.token}}
+Content-Type: application/json
+
+{
+  "name": "Updated Club Member",
+  "role": "Admin"
+}
+
+### 4. Видалити юзера
+DELETE {{baseUrl}}/admin/users/{{createdUser.response.body.user.id}}
+Authorization: Bearer {{loginAdmin.response.body.token}}
