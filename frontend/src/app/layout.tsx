@@ -10,7 +10,7 @@ import { Suspense } from 'react';
 import './globals.css';
 
 export const metadata: Metadata = {
-  title: 'BookSwap — Book Exchange Service',
+  title: 'BooksTrade — Book Exchange Service',
   description: 'Community platform for sharing and exchanging books',
 };
 

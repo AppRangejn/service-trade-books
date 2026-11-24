@@ -14,6 +14,7 @@ interface UserAttributes {
   email: string;
   password: string;
   role: UserRole;
+  avatar: string | null;
 }
 
 interface UserCreationAttributes extends Optional<
@@ -30,6 +31,7 @@ export class User
   declare email: string;
   declare password: string;
   declare role: UserRole;
+  declare avatar: string | null;
 
   async comparePassword(candidatePassword: string): Promise<boolean> {
     return bcrypt.compare(candidatePassword, this.password);
@@ -77,6 +79,11 @@ User.init(
       type: DataTypes.ENUM(...USER_ROLE_VALUES),
       defaultValue: USER_ROLES.USER,
       allowNull: false,
+    },
+    avatar: {
+      type: DataTypes.STRING(500),
+      allowNull: true,
+      defaultValue: null,
     },
   },
   {

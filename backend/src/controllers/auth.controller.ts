@@ -1,8 +1,15 @@
 import { NextFunction, Request, Response } from 'express';
 import createError from 'http-errors';
+import jwt from 'jsonwebtoken';
 import { USER_ROLES } from '../constants';
 import { User } from '../database/models';
+import { sendPasswordResetEmail } from '../services/mail.service';
 import { signAccessToken } from '../utils/jwt';
+
+interface PasswordResetPayload {
+  userId: number;
+  purpose: 'password-reset';
+}
 
 export class AuthController {
   static async register(
@@ -81,6 +88,93 @@ export class AuthController {
       }
 
       res.json({ user });
+    } catch (err) {
+      next(err);
+    }
+  }
+
+  static async forgotPassword(
+    req: Request,
+    res: Response,
+    next: NextFunction,
+  ): Promise<void> {
+    try {
+      const normalizedEmail = req.body.email.toLowerCase();
+      const user = await User.findOne({ where: { email: normalizedEmail } });
+
+      if (!user) {
+        res.json({
+          message:
+            'If an account with that email exists, a password reset email has been sent.',
+        });
+        return;
+      }
+
+      const resetToken = jwt.sign(
+        {
+          userId: user.id,
+          purpose: 'password-reset',
+        } satisfies PasswordResetPayload,
+        process.env.JWT_SECRET!,
+        { expiresIn: '15m' },
+      );
+
+      const clientUrl = (process.env.CLIENT_URL || 'http://localhost:3000')
+        .split(',')[0]
+        .trim();
+      const resetUrl = `${clientUrl}/forgot-password?token=${encodeURIComponent(resetToken)}`;
+
+      const previewUrl = await sendPasswordResetEmail({
+        toEmail: user.email,
+        toName: user.name,
+        resetUrl,
+        resetToken,
+      });
+
+      res.json({
+        message:
+          'If an account with that email exists, a password reset email has been sent.',
+        ...(previewUrl ? { previewUrl } : {}),
+      });
+    } catch (err) {
+      next(err);
+    }
+  }
+
+  static async resetPassword(
+    req: Request,
+    res: Response,
+    next: NextFunction,
+  ): Promise<void> {
+    try {
+      const { token, newPassword } = req.body;
+
+      let decoded: PasswordResetPayload;
+      try {
+        decoded = jwt.verify(
+          token,
+          process.env.JWT_SECRET!,
+        ) as PasswordResetPayload;
+      } catch {
+        next(createError(400, 'Invalid or expired reset token'));
+        return;
+      }
+
+      if (decoded.purpose !== 'password-reset' || !decoded.userId) {
+        next(createError(400, 'Invalid reset token'));
+        return;
+      }
+
+      const user = await User.findByPk(decoded.userId);
+      if (!user) {
+        next(createError(404, 'User not found'));
+        return;
+      }
+
+      user.password = newPassword;
+      await user.save();
+
+      res.json({ message: 'Password has been reset successfully' });
     } catch (err) {
       next(err);
     }

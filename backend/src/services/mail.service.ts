@@ -117,3 +117,58 @@ export const sendExchangeRequestEmail = async (
 
   return previewUrl;
 };
+
+
+export interface PasswordResetEmailPayload {
+  toEmail: string;
+  toName: string;
+  resetUrl: string;
+  resetToken: string;
+}
+
+export const sendPasswordResetEmail = async (
+  payload: PasswordResetEmailPayload,
+): Promise<string | false> => {
+  const transporter = await getTransporter();
+
+  const safeToName = escapeHtml(payload.toName);
+  const safeResetUrl = escapeHtml(payload.resetUrl);
+  const safeToken = escapeHtml(payload.resetToken);
+
+  const info = await transporter.sendMail({
+    from:
+      process.env.SMTP_FROM || '"BookSwap" <noreply@bookexchange.local>',
+    to: payload.toEmail,
+    subject: 'BookSwap — Password Reset Request',
+    text: [
+      `Hello, ${payload.toName}!`,
+      '',
+      'We received a request to reset your BookSwap password.',
+      `Reset link (valid for 15 minutes): ${payload.resetUrl}`,
+      '',
+      `Or paste this reset code on the page: ${payload.resetToken}`,
+    ].join('\n'),
+    html: `
+      <div style="font-family: sans-serif; line-height: 1.5; color: #222;">
+        <h2>Hello, ${safeToName}!</h2>
+        <p>We received a request to reset your BookSwap password.</p>
+        <p>
+          <a href="${safeResetUrl}" style="display:inline-block;padding:10px 18px;background:#1e40af;color:#fff;text-decoration:none;border-radius:6px;font-weight:600;">
+            Reset Password
+          </a>
+        </p>
+        <p style="font-size:13px;color:#555;">
+          Or paste this token manually (valid for 15 minutes):<br/>
+          <code style="background:#f1f5f9;padding:4px 6px;border-radius:4px;word-break:break-all;">${safeToken}</code>
+        </p>
+      </div>
+    `,
+  });
+
+  const previewUrl = nodemailer.getTestMessageUrl(info);
+  if (previewUrl) {
+    console.log('Password reset email preview URL:', previewUrl);
+  }
+
+  return previewUrl;
+};
