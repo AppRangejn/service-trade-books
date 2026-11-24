@@ -22,4 +22,10 @@ export const SORT_ORDER_VALUES = Object.values(SORT_ORDER);
 
 export type SortOrder = (typeof SORT_ORDER)[keyof typeof SORT_ORDER];
 
-export const BCRYPT_SALT_ROUNDS = 10;
+export const AUTH_CONFIG = {
+  SALT_ROUNDS: 10,
+  JWT_EXPIRES_IN: '7d',
+  JWT_ISSUER: 'book-trade-api',
+  JWT_AUDIENCE: 'book-trade-client',
+  JWT_TOKEN_TYPE: 'access',
+} as const;

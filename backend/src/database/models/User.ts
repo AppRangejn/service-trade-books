@@ -2,7 +2,7 @@ import bcrypt from 'bcrypt';
 import { DataTypes, Model, Optional } from 'sequelize';
 import { sequelize } from '../../config/db';
 import {
-  BCRYPT_SALT_ROUNDS,
+  AUTH_CONFIG,
   USER_ROLES,
   USER_ROLE_VALUES,
   UserRole,
@@ -69,7 +69,7 @@ User.init(
       set(value: string) {
         this.setDataValue(
           'password',
-          bcrypt.hashSync(value, BCRYPT_SALT_ROUNDS),
+          bcrypt.hashSync(value, AUTH_CONFIG.SALT_ROUNDS),
         );
       },
     },
