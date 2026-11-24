@@ -110,12 +110,13 @@ export class AuthController {
         return;
       }
 
+      const resetSecret = `${process.env.JWT_SECRET!}:${user.password}`;
       const resetToken = jwt.sign(
         {
           userId: user.id,
           purpose: 'password-reset',
         } satisfies PasswordResetPayload,
-        process.env.JWT_SECRET!,
+        resetSecret,
         { expiresIn: '15m' },
       );
 
@@ -149,25 +150,27 @@ export class AuthController {
     try {
       const { token, newPassword } = req.body;
 
-      let decoded: PasswordResetPayload;
-      try {
-        decoded = jwt.verify(
-          token,
-          process.env.JWT_SECRET!,
-        ) as PasswordResetPayload;
-      } catch {
-        next(createError(400, 'Invalid or expired reset token'));
-        return;
-      }
-
-      if (decoded.purpose !== 'password-reset' || !decoded.userId) {
+      const unverified = jwt.decode(token) as PasswordResetPayload | null;
+      if (
+        !unverified ||
+        unverified.purpose !== 'password-reset' ||
+        !unverified.userId
+      ) {
         next(createError(400, 'Invalid reset token'));
         return;
       }
 
-      const user = await User.findByPk(decoded.userId);
+      const user = await User.findByPk(unverified.userId);
       if (!user) {
         next(createError(404, 'User not found'));
+        return;
+      }
+
+      const resetSecret = `${process.env.JWT_SECRET!}:${user.password}`;
+      try {
+        jwt.verify(token, resetSecret);
+      } catch {
+        next(createError(400, 'Invalid or expired reset token'));
         return;
       }
 

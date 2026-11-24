@@ -58,3 +58,42 @@ export const bookIdParamSchema = yup.object({
     id: yup.number().integer().positive('Invalid book ID').required(),
   }),
 });
+
+export const updateBookSchema = yup.object({
+  params: yup.object({
+    id: yup.number().integer().positive('Invalid book ID').required(),
+  }),
+  body: yup
+    .object({
+      name: yup
+        .string()
+        .trim()
+        .min(1, 'Book name is required')
+        .max(255)
+        .optional(),
+      author: yup
+        .string()
+        .trim()
+        .min(1, 'Author is required')
+        .max(255)
+        .optional(),
+      photo: yup
+        .string()
+        .trim()
+        .transform((value) => (value === '' ? null : value))
+        .url('Photo must be a valid URL')
+        .nullable()
+        .optional(),
+    })
+    .test(
+      'at-least-one-field',
+      'At least one field (name, author, or photo) must be provided',
+      (value) =>
+        Boolean(
+          value &&
+            (value.name !== undefined ||
+              value.author !== undefined ||
+              value.photo !== undefined),
+        ),
+    ),
+});

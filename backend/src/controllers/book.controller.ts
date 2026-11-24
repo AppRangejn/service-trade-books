@@ -136,6 +136,42 @@ export class BookController {
     }
   }
 
+  static async update(
+    req: Request,
+    res: Response,
+    next: NextFunction,
+  ): Promise<void> {
+    try {
+      const bookId = Number(req.params.id);
+      const book = await Book.findByPk(bookId);
+
+      if (!book) {
+        next(createError(404, 'Book not found'));
+        return;
+      }
+
+      const isOwner = book.userId === req.user!.id;
+      const isAdmin = req.user!.role === USER_ROLES.ADMIN;
+
+      if (!isOwner && !isAdmin) {
+        next(createError(403, 'Forbidden: you can only edit your own books'));
+        return;
+      }
+
+      const { name, author, photo } = req.body;
+
+      if (name !== undefined) book.name = name;
+      if (author !== undefined) book.author = author;
+      if (photo !== undefined) book.photo = photo;
+
+      await book.save();
+
+      res.json({ book });
+    } catch (err) {
+      next(err);
+    }
+  }
+
   static async delete(
     req: Request,
     res: Response,

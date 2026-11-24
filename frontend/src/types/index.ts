@@ -110,3 +110,9 @@ export interface ResetPasswordPayload {
   token: string;
   newPassword: string;
 }
+
+export interface UpdateBookPayload {
+  name?: string;
+  author?: string;
+  photo?: string | null;
+}

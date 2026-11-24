@@ -4,6 +4,7 @@ import {
   CreateBookPayload,
   ExchangeResponse,
   GetBooksParams,
+  UpdateBookPayload,
 } from '@/types';
 import { baseApi } from './baseApi';
 
@@ -38,6 +39,22 @@ export const booksApi = baseApi.injectEndpoints({
       }),
       invalidatesTags: [{ type: 'Books', id: 'LIST' }, 'MyBooks'],
     }),
+    updateBook: builder.mutation<
+      { book: Book },
+      { id: number; data: UpdateBookPayload }
+    >({
+      query: ({ id, data }) => ({
+        url: `/me/books/${id}`,
+        method: 'PATCH',
+        body: data,
+      }),
+      invalidatesTags: (_result, _error, { id }) => [
+        { type: 'Books', id },
+        { type: 'Books', id: 'LIST' },
+        { type: 'Book', id },
+        'MyBooks',
+      ],
+    }),
     deleteBook: builder.mutation<void, number>({
       query: (id) => ({
         url: `/books/${id}`,
@@ -64,6 +81,7 @@ export const {
   useGetBookByIdQuery,
   useGetMyBooksQuery,
   useCreateBookMutation,
+  useUpdateBookMutation,
   useDeleteBookMutation,
   useRequestExchangeMutation,
 } = booksApi;
