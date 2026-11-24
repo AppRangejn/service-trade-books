@@ -1,6 +1,7 @@
 'use client';
 
 import { User } from '@/types';
+import AccountCircleOutlinedIcon from '@mui/icons-material/AccountCircleOutlined';
 import KeyboardArrowDownIcon from '@mui/icons-material/KeyboardArrowDown';
 import LogoutIcon from '@mui/icons-material/Logout';
 import MenuIcon from '@mui/icons-material/Menu';
@@ -8,6 +9,7 @@ import MenuBookIcon from '@mui/icons-material/MenuBook';
 import PersonOutlineOutlinedIcon from '@mui/icons-material/PersonOutlineOutlined';
 import SearchIcon from '@mui/icons-material/Search';
 import ShieldOutlinedIcon from '@mui/icons-material/ShieldOutlined';
+import Avatar from '@mui/material/Avatar';
 import Box from '@mui/material/Box';
 import Button from '@mui/material/Button';
 import Chip from '@mui/material/Chip';
@@ -82,7 +84,17 @@ export const HeaderUserActions = ({
         <>
           <Button
             onClick={handleOpenMenu}
-            startIcon={<PersonOutlineOutlinedIcon fontSize="small" />}
+            startIcon={
+              user.avatar ? (
+                <Avatar
+                  src={user.avatar}
+                  alt={user.name}
+                  sx={{ width: 24, height: 24 }}
+                />
+              ) : (
+                <PersonOutlineOutlinedIcon fontSize="small" />
+              )
+            }
             endIcon={<KeyboardArrowDownIcon fontSize="small" />}
             sx={{
               display: { xs: 'none', sm: 'inline-flex' },
@@ -136,6 +148,17 @@ export const HeaderUserActions = ({
               },
             }}
           >
+            <MenuItem
+              component={Link}
+              href="/profile"
+              onClick={handleCloseMenu}
+            >
+              <ListItemIcon>
+                <AccountCircleOutlinedIcon fontSize="small" />
+              </ListItemIcon>
+              Profile
+            </MenuItem>
+
             <MenuItem
               component={Link}
               href="/me/books"

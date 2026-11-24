@@ -1,4 +1,12 @@
-import { AuthResponse, LoginPayload, RegisterPayload, User } from '@/types';
+import {
+  AuthResponse,
+  ForgotPasswordPayload,
+  ForgotPasswordResponse,
+  LoginPayload,
+  RegisterPayload,
+  ResetPasswordPayload,
+  User,
+} from '@/types';
 import { baseApi } from './baseApi';
 
 export const authApi = baseApi.injectEndpoints({
@@ -23,7 +31,33 @@ export const authApi = baseApi.injectEndpoints({
       query: () => '/auth/me',
       providesTags: ['Me'],
     }),
+    forgotPassword: builder.mutation<
+      ForgotPasswordResponse,
+      ForgotPasswordPayload
+    >({
+      query: (body) => ({
+        url: '/auth/forgot-password',
+        method: 'POST',
+        body,
+      }),
+    }),
+    resetPassword: builder.mutation<
+      { message: string },
+      ResetPasswordPayload
+    >({
+      query: (body) => ({
+        url: '/auth/reset-password',
+        method: 'POST',
+        body,
+      }),
+    }),
   }),
 });
 
-export const { useLoginMutation, useRegisterMutation, useGetMeQuery } = authApi;
+export const {
+  useLoginMutation,
+  useRegisterMutation,
+  useGetMeQuery,
+  useForgotPasswordMutation,
+  useResetPasswordMutation,
+} = authApi;

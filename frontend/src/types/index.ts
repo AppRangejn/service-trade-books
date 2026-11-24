@@ -5,6 +5,7 @@ export interface User {
   name: string;
   email: string;
   role: UserRole;
+  avatar?: string | null;
   createdAt?: string;
   updatedAt?: string;
 }
@@ -83,4 +84,29 @@ export interface UpdateUserPayload {
   email?: string;
   password?: string;
   role?: UserRole;
+}
+
+export interface ProfileResponse {
+  user: User;
+  booksCount: number;
+}
+
+export interface UpdateProfilePayload {
+  name?: string;
+  email?: string;
+  avatar?: string | null;
+}
+
+export interface ForgotPasswordPayload {
+  email: string;
+}
+
+export interface ForgotPasswordResponse {
+  message: string;
+  previewUrl?: string;
+}
+
+export interface ResetPasswordPayload {
+  token: string;
+  newPassword: string;
 }

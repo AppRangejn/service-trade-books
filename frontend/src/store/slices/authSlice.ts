@@ -1,4 +1,5 @@
 import { authApi } from '@/api/authApi';
+import { profileApi } from '@/api/profileApi';
 import {
   AUTH_SLICE_NAME,
   TOKEN_STORAGE_KEY,
@@ -89,6 +90,20 @@ const authSlice = createSlice({
           state.user = payload.user;
           state.isInitialized = true;
           if (typeof window !== 'undefined') {
+            localStorage.setItem(
+              USER_STORAGE_KEY,
+              JSON.stringify(payload.user),
+            );
+          }
+        },
+      )
+      .addMatcher(
+        profileApi.endpoints.updateProfile.matchFulfilled,
+        (state, { payload }) => {
+          state.user = payload.user;
+          state.token = payload.token;
+          if (typeof window !== 'undefined') {
+            localStorage.setItem(TOKEN_STORAGE_KEY, payload.token);
             localStorage.setItem(
               USER_STORAGE_KEY,
               JSON.stringify(payload.user),

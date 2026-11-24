@@ -6,6 +6,7 @@ import CloseIcon from '@mui/icons-material/Close';
 import LoginIcon from '@mui/icons-material/Login';
 import LogoutIcon from '@mui/icons-material/Logout';
 import PersonAddIcon from '@mui/icons-material/PersonAdd';
+import Avatar from '@mui/material/Avatar';
 import Box from '@mui/material/Box';
 import Button from '@mui/material/Button';
 import Chip from '@mui/material/Chip';
@@ -97,6 +98,9 @@ export const MobileNavDrawer = ({
 
         {isAuthenticated && user && (
           <Box
+            component={Link}
+            href="/profile"
+            onClick={handleCloseDrawer}
             sx={{
               p: 1.5,
               mb: 2,
@@ -106,21 +110,45 @@ export const MobileNavDrawer = ({
               display: 'flex',
               alignItems: 'center',
               justifyContent: 'space-between',
-              gap: 1,
+              gap: 1.5,
+              textDecoration: 'none',
+              color: 'inherit',
+              '&:hover': { bgcolor: '#e2e8f0' },
             }}
           >
-            <Box sx={{ minWidth: 0 }}>
-              <Typography variant="body2" sx={{ fontWeight: 700 }} noWrap>
-                {user.name}
-              </Typography>
-              <Typography
-                variant="caption"
-                color="text.secondary"
-                sx={{ display: 'block' }}
-                noWrap
+            <Box
+              sx={{
+                display: 'flex',
+                alignItems: 'center',
+                gap: 1.25,
+                minWidth: 0,
+              }}
+            >
+              <Avatar
+                src={user.avatar || undefined}
+                alt={user.name}
+                sx={{
+                  width: 34,
+                  height: 34,
+                  bgcolor: 'primary.main',
+                  fontSize: 14,
+                }}
               >
-                {user.email}
-              </Typography>
+                {user.name.charAt(0).toUpperCase()}
+              </Avatar>
+              <Box sx={{ minWidth: 0 }}>
+                <Typography variant="body2" sx={{ fontWeight: 700 }} noWrap>
+                  {user.name}
+                </Typography>
+                <Typography
+                  variant="caption"
+                  color="text.secondary"
+                  sx={{ display: 'block' }}
+                  noWrap
+                >
+                  {user.email}
+                </Typography>
+              </Box>
             </Box>
             <Chip
               label={user.role}

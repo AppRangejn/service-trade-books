@@ -36,7 +36,7 @@ export default function LoginPage() {
 
   return (
     <Box sx={{ maxWidth: 420, mx: 'auto', mt: 4 }}>
-      <Paper sx={{ p: 4 }}>
+      <Paper sx={{ p: 4, borderRadius: 3 }}>
         <Typography variant="h5" gutterBottom sx={{ fontWeight: 700 }}>
           Sign In
         </Typography>
@@ -62,6 +62,7 @@ export default function LoginPage() {
             name="email"
             label="Email"
             type="email"
+            autoComplete="email"
             value={formik.values.email}
             onChange={formik.handleChange}
             onBlur={formik.handleBlur}
@@ -75,12 +76,24 @@ export default function LoginPage() {
             name="password"
             label="Password"
             type="password"
+            autoComplete="current-password"
             value={formik.values.password}
             onChange={formik.handleChange}
             onBlur={formik.handleBlur}
             error={formik.touched.password && Boolean(formik.errors.password)}
             helperText={formik.touched.password && formik.errors.password}
           />
+
+          <Box sx={{ textAlign: 'right', mt: -1 }}>
+            <Link
+              component={NextLink}
+              href="/forgot-password"
+              variant="body2"
+              underline="hover"
+            >
+              Forgot password?
+            </Link>
+          </Box>
 
           <Button
             type="submit"
