@@ -44,7 +44,7 @@ export class BookController {
           {
             model: User,
             as: 'owner',
-            attributes: ['id', 'name', 'email'],
+            attributes: ['id', 'name'],
           },
         ],
         order: [
@@ -82,7 +82,7 @@ export class BookController {
           {
             model: User,
             as: 'owner',
-            attributes: ['id', 'name', 'email'],
+            attributes: ['id', 'name'],
           },
         ],
       });

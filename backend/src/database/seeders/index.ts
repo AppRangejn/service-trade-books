@@ -3,6 +3,10 @@ import { sequelize } from '../models';
 import { seedBooks } from './books.seed';
 import { seedUsers } from './users.seed';
 
+if (process.env.NODE_ENV === 'production') {
+  throw new Error('Refusing to run database seeder in production environment.');
+}
+
 const runSeeders = async () => {
   try {
     await sequelize.authenticate();

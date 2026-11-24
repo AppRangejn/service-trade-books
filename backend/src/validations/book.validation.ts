@@ -41,6 +41,7 @@ export const getBooksQuerySchema = yup.object({
       .transform(emptyStringToUndefined)
       .integer()
       .min(1)
+      .max(10000, 'Page must not exceed 10000')
       .optional(),
     limit: yup
       .number()

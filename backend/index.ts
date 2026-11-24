@@ -4,8 +4,18 @@ import app from './src/app';
 import { sequelize } from './src/config/db';
 import './src/database/models';
 
-if (!process.env.JWT_SECRET) {
-  throw new Error('FATAL: JWT_SECRET environment variable is missing');
+const jwtSecret = process.env.JWT_SECRET?.trim() ?? ''; 
+const PLACEHOLDER_SECRETS = new Set([
+  'your_super_secret_jwt_key_change_in_production',
+  'your_generated_secret',
+  'changeme',
+  'secret',
+]);
+
+if (jwtSecret.length < 32 || PLACEHOLDER_SECRETS.has(jwtSecret)) {
+  throw new Error(
+    'FATAL: JWT_SECRET must be at least 32 characters long and not use a placeholder value',
+  );
 }
 
 const PORT = Number(process.env.PORT) || 5000;
