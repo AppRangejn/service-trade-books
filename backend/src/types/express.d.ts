@@ -9,6 +9,7 @@ declare global {
         email: string;
         role: UserRole;
       };
+      validatedQuery?: Record<string, unknown>;
     }
   }
 }

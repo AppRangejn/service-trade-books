@@ -16,9 +16,4 @@ Book.belongsTo(User, {
   onUpdate: 'CASCADE',
 });
 
-export const initDb = async () => {
-  await sequelize.authenticate();
-  await sequelize.sync({ alter: true });
-};
-
 export { Book, sequelize, User };

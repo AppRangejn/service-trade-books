@@ -19,7 +19,7 @@ export const validate =
 
       if (validated.body) req.body = validated.body;
       if (validated.params) Object.assign(req.params, validated.params);
-      if (validated.query) Object.assign(req.query, validated.query);
+      if (validated.query) req.validatedQuery = validated.query;
 
       next();
     } catch (err) {

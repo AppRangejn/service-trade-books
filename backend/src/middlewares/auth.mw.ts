@@ -1,14 +1,8 @@
+// src/middlewares/auth.mw.ts
 import { NextFunction, Request, Response } from 'express';
 import createError from 'http-errors';
-import jwt from 'jsonwebtoken';
-import { UserRole } from '../constants';
 import { User } from '../database/models';
-
-export interface JwtPayload {
-  id: number;
-  email: string;
-  role: UserRole;
-}
+import { JwtPayload, verifyAccessToken } from '../utils/jwt';
 
 export const authMw = async (
   req: Request,
@@ -22,10 +16,16 @@ export const authMw = async (
   }
 
   const token = authHeader.split(' ')[1];
+  let decoded: JwtPayload;
 
   try {
-    const decoded = jwt.verify(token, process.env.JWT_SECRET!) as JwtPayload;
+    decoded = verifyAccessToken(token);
+  } catch {
+    next(createError(401, 'Invalid or expired token'));
+    return;
+  }
 
+  try {
     const dbUser = await User.findByPk(decoded.id, {
       attributes: ['id', 'name', 'email', 'role'],
     });
@@ -43,7 +43,7 @@ export const authMw = async (
     };
 
     next();
-  } catch {
-    next(createError(401, 'Invalid or expired token'));
+  } catch (err) {
+    next(err);
   }
 };
