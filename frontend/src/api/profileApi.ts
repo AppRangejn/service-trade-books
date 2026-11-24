@@ -1,4 +1,10 @@
-import { AuthResponse, ProfileResponse, UpdateProfilePayload } from '@/types';
+import { ExchangeStatus } from '@/constants';
+import {
+  AuthResponse,
+  IncomingExchangeRequest,
+  ProfileResponse,
+  UpdateProfilePayload,
+} from '@/types';
 import { baseApi } from './baseApi';
 
 export const profileApi = baseApi.injectEndpoints({
@@ -15,7 +21,30 @@ export const profileApi = baseApi.injectEndpoints({
       }),
       invalidatesTags: ['Me', 'Users'],
     }),
+    getIncomingRequests: builder.query<
+      { requests: IncomingExchangeRequest[] },
+      void
+    >({
+      query: () => '/profile/requests',
+      providesTags: ['ProfileRequests'],
+    }),
+    updateRequestStatus: builder.mutation<
+      void,
+      { id: number; status: Exclude<ExchangeStatus, 'pending'> }
+    >({
+      query: ({ id, status }) => ({
+        url: `/profile/requests/${id}`,
+        method: 'PATCH',
+        body: { status },
+      }),
+      invalidatesTags: ['ProfileRequests'],
+    }),
   }),
 });
 
-export const { useGetProfileQuery, useUpdateProfileMutation } = profileApi;
+export const {
+  useGetProfileQuery,
+  useUpdateProfileMutation,
+  useGetIncomingRequestsQuery,
+  useUpdateRequestStatusMutation,
+} = profileApi;

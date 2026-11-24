@@ -1,8 +1,13 @@
 'use client';
 
-import { useGetProfileQuery, useUpdateProfileMutation } from '@/api/profileApi';
+import {
+  useGetIncomingRequestsQuery,
+  useGetProfileQuery,
+  useUpdateProfileMutation,
+  useUpdateRequestStatusMutation,
+} from '@/api/profileApi';
 import { ProtectedRoute } from '@/components/ProtectedRoute';
-import { USER_ROLES } from '@/constants';
+import { EXCHANGE_STATUS, USER_ROLES } from '@/constants';
 import { getErrorMessage } from '@/utils/getErrorMessage';
 import { updateProfileSchema } from '@/validation/schemas';
 import AccountCircleOutlinedIcon from '@mui/icons-material/AccountCircleOutlined';
@@ -28,12 +33,22 @@ export default function ProfilePage() {
   const { data, isLoading, error } = useGetProfileQuery();
   const [updateProfile, { isLoading: isUpdating, error: updateError }] =
     useUpdateProfileMutation();
+  const {
+    data: requestsData,
+    isLoading: isRequestsLoading,
+    error: requestsError,
+  } = useGetIncomingRequestsQuery();
+  const [
+    updateRequestStatus,
+    { isLoading: isUpdatingStatus, error: statusError },
+  ] = useUpdateRequestStatusMutation();
 
   const [avatarError, setAvatarError] = useState(false);
-  const [toastOpen, setToastOpen] = useState(false);
+  const [toastMessage, setToastMessage] = useState<string | null>(null);
 
   const user = data?.user;
   const booksCount = data?.booksCount ?? 0;
+  const incomingRequests = requestsData?.requests ?? [];
 
   const formik = useFormik({
     enableReinitialize: true,
@@ -51,12 +66,28 @@ export default function ProfilePage() {
           avatar: values.avatar.trim() || null,
         }).unwrap();
         setAvatarError(false);
-        setToastOpen(true);
+        setToastMessage('Profile updated successfully');
       } catch {
         // Handled via updateError
       }
     },
   });
+
+  const handleStatusChange = async (
+    id: number,
+    status: typeof EXCHANGE_STATUS.ACCEPTED | typeof EXCHANGE_STATUS.REJECTED,
+  ) => {
+    try {
+      await updateRequestStatus({ id, status }).unwrap();
+      setToastMessage(
+        status === EXCHANGE_STATUS.ACCEPTED
+          ? 'Exchange request accepted'
+          : 'Exchange request declined',
+      );
+    } catch {
+      // Handled via statusError
+    }
+  };
 
   const previewAvatar = formik.values.avatar.trim();
 
@@ -165,7 +196,7 @@ export default function ProfilePage() {
                 </Box>
               </Paper>
 
-              {/* Right Column: Edit Form + Exchange Notifications */}
+              {/* Right Column: Edit Form + Exchange Requests */}
               <Box sx={{ display: 'flex', flexDirection: 'column', gap: 3 }}>
                 <Paper
                   component="form"
@@ -257,22 +288,152 @@ export default function ProfilePage() {
                     sx={{
                       display: 'flex',
                       alignItems: 'center',
-                      gap: 1.5,
-                      mb: 1.5,
+                      justifyContent: 'space-between',
+                      mb: 2,
                     }}
                   >
-                    <MarkEmailReadOutlinedIcon color="primary" />
-                    <Typography variant="h6" sx={{ fontWeight: 700 }}>
-                      Exchange Request Notifications
-                    </Typography>
+                    <Box
+                      sx={{ display: 'flex', alignItems: 'center', gap: 1.5 }}
+                    >
+                      <MarkEmailReadOutlinedIcon color="primary" />
+                      <Typography variant="h6" sx={{ fontWeight: 700 }}>
+                        Incoming Exchange Requests
+                      </Typography>
+                    </Box>
+                    <Chip
+                      label={incomingRequests.length}
+                      size="small"
+                      color="primary"
+                    />
                   </Box>
-                  <Typography variant="body2" color="text.secondary">
-                    Email notifications are active. Whenever another reader
-                    requests one of your {booksCount} listed{' '}
-                    {booksCount === 1 ? 'book' : 'books'}, an instant message
-                    with their contact details and available books is sent to{' '}
-                    <strong>{user.email}</strong>.
-                  </Typography>
+
+                  {(requestsError || statusError) && (
+                    <Alert severity="error" sx={{ mb: 2 }}>
+                      {getErrorMessage(
+                        requestsError || statusError,
+                        'Failed to process exchange requests',
+                      )}
+                    </Alert>
+                  )}
+
+                  {isRequestsLoading ? (
+                    <Box
+                      sx={{ display: 'flex', justifyContent: 'center', py: 3 }}
+                    >
+                      <CircularProgress size={24} />
+                    </Box>
+                  ) : incomingRequests.length > 0 ? (
+                    <Box
+                      sx={{
+                        display: 'flex',
+                        flexDirection: 'column',
+                        gap: 2,
+                      }}
+                    >
+                      {incomingRequests.map((reqItem) => (
+                        <Box
+                          key={reqItem.id}
+                          sx={{
+                            p: 2,
+                            borderRadius: 2.5,
+                            bgcolor: '#f8fafc',
+                            border: '1px solid #e2e8f0',
+                          }}
+                        >
+                          <Box
+                            sx={{
+                              display: 'flex',
+                              justifyContent: 'space-between',
+                              alignItems: 'flex-start',
+                              gap: 1,
+                              mb: 1,
+                            }}
+                          >
+                            <Box>
+                              <Typography
+                                variant="subtitle2"
+                                sx={{ fontWeight: 700 }}
+                              >
+                                {reqItem.requester.name} wants &ldquo;
+                                {reqItem.book.name}&rdquo;
+                              </Typography>
+                              <Typography
+                                variant="caption"
+                                color="text.secondary"
+                              >
+                                Contact: {reqItem.requester.email}
+                              </Typography>
+                            </Box>
+                            <Chip
+                              label={reqItem.status.toUpperCase()}
+                              size="small"
+                              color={
+                                reqItem.status === EXCHANGE_STATUS.ACCEPTED
+                                  ? 'success'
+                                  : reqItem.status === EXCHANGE_STATUS.REJECTED
+                                    ? 'error'
+                                    : 'warning'
+                              }
+                            />
+                          </Box>
+
+                          <Typography
+                            variant="body2"
+                            color="text.secondary"
+                            sx={{ mb: 1.5 }}
+                          >
+                            Offered books:{' '}
+                            {reqItem.requester.books.length > 0
+                              ? reqItem.requester.books
+                                  .map((b) => `${b.name} (${b.author})`)
+                                  .join(', ')
+                              : 'No books listed yet'}
+                          </Typography>
+
+                          {reqItem.status === EXCHANGE_STATUS.PENDING && (
+                            <Box sx={{ display: 'flex', gap: 1 }}>
+                              <Button
+                                size="small"
+                                variant="contained"
+                                color="success"
+                                disabled={isUpdatingStatus}
+                                onClick={() =>
+                                  handleStatusChange(
+                                    reqItem.id,
+                                    EXCHANGE_STATUS.ACCEPTED,
+                                  )
+                                }
+                              >
+                                Accept
+                              </Button>
+                              <Button
+                                size="small"
+                                variant="outlined"
+                                color="error"
+                                disabled={isUpdatingStatus}
+                                onClick={() =>
+                                  handleStatusChange(
+                                    reqItem.id,
+                                    EXCHANGE_STATUS.REJECTED,
+                                  )
+                                }
+                              >
+                                Decline
+                              </Button>
+                            </Box>
+                          )}
+                        </Box>
+                      ))}
+                    </Box>
+                  ) : (
+                    <Typography variant="body2" color="text.secondary">
+                      No exchange requests yet. Whenever another reader requests
+                      one of your {booksCount} listed{' '}
+                      {booksCount === 1 ? 'book' : 'books'}, their request and
+                      contact details will appear here alongside email delivery
+                      to <strong>{user.email}</strong>.
+                    </Typography>
+                  )}
                 </Paper>
               </Box>
             </Box>
@@ -280,17 +441,17 @@ export default function ProfilePage() {
         )}
 
         <Snackbar
-          open={toastOpen}
+          open={Boolean(toastMessage)}
           autoHideDuration={3500}
-          onClose={() => setToastOpen(false)}
+          onClose={() => setToastMessage(null)}
           anchorOrigin={{ vertical: 'bottom', horizontal: 'right' }}
         >
           <Alert
-            onClose={() => setToastOpen(false)}
+            onClose={() => setToastMessage(null)}
             severity="success"
             variant="filled"
           >
-            Profile updated successfully
+            {toastMessage}
           </Alert>
         </Snackbar>
       </Box>

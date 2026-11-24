@@ -1,4 +1,4 @@
-import { SortOrder, UserRole } from '@/constants';
+import { ExchangeStatus, SortOrder, UserRole } from '@/constants';
 
 export interface User {
   id: number;
@@ -115,4 +115,23 @@ export interface UpdateBookPayload {
   name?: string;
   author?: string;
   photo?: string | null;
+}
+
+export interface IncomingExchangeRequest {
+  id: number;
+  status: ExchangeStatus;
+  createdAt: string;
+  book: {
+    id: number;
+    name: string;
+    author: string;
+    photo: string | null;
+  };
+  requester: {
+    id: number;
+    name: string;
+    email: string;
+    avatar: string | null;
+    books: Array<{ id: number; name: string; author: string }>;
+  };
 }

@@ -24,3 +24,14 @@ export const DEFAULT_PAGINATION = {
   PAGE: 1,
   LIMIT: 8,
 } as const;
+
+export const EXCHANGE_STATUS = {
+  PENDING: 'pending',
+  ACCEPTED: 'accepted',
+  REJECTED: 'rejected',
+} as const;
+
+export const EXCHANGE_STATUS_VALUES = Object.values(EXCHANGE_STATUS);
+
+export type ExchangeStatus =
+  (typeof EXCHANGE_STATUS)[keyof typeof EXCHANGE_STATUS];
