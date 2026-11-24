@@ -1,36 +1,108 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# Book Exchange Service — Frontend
 
-## Getting Started
+## Технологічний стек
 
-First, run the development server:
+- **Framework:** Next.js 16 (App Router), React 19, TypeScript
+- **UI:** Material UI (MUI), Emotion
+- **State & API:** Redux Toolkit, React Redux, RTK Query
+- **Forms & validation:** Formik, Yup
+
+---
+
+## Швидкий старт
+
+### 1. Клонування репозиторію
+
+```bash
+git clone https://github.com/AppRangejn/service-trade-books.git
+cd service-trade-books/frontend
+```
+
+### 2. Встановлення залежностей
+
+Потрібен Node.js 20.9 або новіший.
+
+```bash
+npm install
+```
+
+### 3. Налаштування змінних середовища
+
+Скопіюйте шаблон `.env.example` у локальний файл `.env.local`:
+
+```bash
+cp .env.example .env.local
+```
+
+Вкажіть URL backend API:
+
+```dotenv
+NEXT_PUBLIC_API_URL=http://localhost:5000/api
+```
+
+Якщо `NEXT_PUBLIC_API_URL` не задано, застосунок використовує `http://localhost:5000/api`. Змінні з префіксом `NEXT_PUBLIC_` доступні у браузері; не зберігайте в них секрети. Для production задайте адресу розгорнутого backend до запуску build-команди.
+
+### 4. Запуск backend
+
+Frontend надсилає запити до backend API. Перед використанням застосунку запустіть backend і переконайтеся, що його адреса збігається з `NEXT_PUBLIC_API_URL`. Для локального запуску та інструкцій із PostgreSQL дивіться [backend/README.md](../backend/README.md).
+
+Для локального frontend/backend налаштуйте backend CORS так, щоб дозволити origin `http://localhost:3000`.
+
+### 5. Запуск frontend
+
+Режим розробки з hot reload:
 
 ```bash
 npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+Відкрийте [http://localhost:3000](http://localhost:3000).
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+## Збірка та запуск
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+Створення production-збірки:
 
-## Learn More
+```bash
+npm run build
+```
 
-To learn more about Next.js, take a look at the following resources:
+Запуск зібраного застосунку:
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+```bash
+npm start
+```
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+Production-сервер Next.js за замовчуванням буде доступний на `http://localhost:3000`. Переконайтеся, що backend доступний за налаштованим `NEXT_PUBLIC_API_URL`.
 
-## Deploy on Vercel
+## Перевірки коду
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+Запустити ESLint:
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+```bash
+npm run lint
+```
+
+## Сторінки та можливості
+
+| Сторінка | Доступ | Опис |
+|---|---|---|
+| `/` | Public | Головна сторінка та навігація сервісом |
+| `/register` | Public | Реєстрація |
+| `/login` | Public | Вхід |
+| `/forgot-password` | Public | Запит на скидання пароля та встановлення нового за reset token |
+| `/books` | Public | Каталог книг із пошуком, сортуванням, пагінацією та доступними діями |
+| `/books/:id` | Public | Деталі книги, запит на обмін, видалення для власника або адміністратора |
+| `/me/books` | Auth | Список, додавання й видалення власних книг |
+| `/profile` | Auth | Перегляд і редагування профілю |
+| `/admin` | Admin | Сторінка керування користувачами |
+
+## Авторизація та API
+
+Для коректної роботи frontend очікує, що backend API підтримує такі маршрути:
+
+- `/api/auth/register`, `/api/auth/login`, `/api/auth/me`
+- `/api/auth/forgot-password`, `/api/auth/reset-password`
+- `/api/profile` (`GET`, `PATCH`)
+- `/api/books`, `/api/books/:id`, `/api/books/:id/exchange`
+- `/api/me/books`
+- `/api/admin/users` та `/api/admin/users/:id`
