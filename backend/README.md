@@ -6,6 +6,7 @@
 - **Database & ORM:** PostgreSQL, Sequelize
 - **Auth & Security:** JWT (`jsonwebtoken`), `bcrypt`, `helmet`, `cors`, `express-rate-limit`
 - **Validation & Email:** `yup`, `nodemailer` (у development без SMTP-облікових даних використовується тестова скринька Ethereal)
+- **Exchange workflow:** збереження запитів на обмін зі статусами `pending`, `accepted`, `rejected`
 - **Testing:** Vitest, Supertest, REST Client (`.http`)
 
 ---
@@ -75,6 +76,8 @@ SMTP_FROM="Book Club <noreply@bookclub.local>"
 
 Для хмарної PostgreSQL замість `DB_HOST`, `DB_PORT`, `DB_NAME`, `DB_USER` і `DB_PASSWORD` можна вказати `DATABASE_URL`; за потреби налаштуйте `DB_SSL` та `DB_SSL_REJECT_UNAUTHORIZED`. У production необхідно вказати валідні SMTP-облікові дані.
 
+`JWT_SECRET` має бути не коротшим за 32 символи. Значення-заглушка з `.env.example` потрібно замінити на згенерований секрет до запуску сервера. `DB_SYNC_ALTER=true` призначений для локальної розробки; у production зміни схеми слід керувати окремо, а не вмикати автоматичний `alter`.
+
 ### 5. Наповнення бази тестовими даними
 
 Запустіть сідер:
@@ -83,7 +86,7 @@ SMTP_FROM="Book Club <noreply@bookclub.local>"
 npm run seed
 ```
 
-Сідер створює схему таблиць і додає 5 учасників книжкового клубу та 12 книг. Якщо користувачі або книги вже є, відповідна частина сіду пропускається.
+Сідер створює/оновлює таблиці через Sequelize та додає 5 учасників книжкового клубу і 12 книг. Якщо користувачі або книги вже є, відповідна частина сіду пропускається. Запускайте його лише на локальній базі для розробки: він створює тестові акаунти з відомими паролями.
 
 #### Тестові акаунти
 
@@ -117,6 +120,7 @@ npm start
 ### Автоматичні інтеграційні тести (Vitest + Supertest)
 
 Перед запуском переконайтеся, що PostgreSQL доступний і змінні підключення до БД налаштовані в `.env`.
+Тести використовують тестові книги й адміністратора з сіду, тому спочатку запустіть `npm run seed` на локальній базі.
 
 ```bash
 npm test
@@ -139,15 +143,20 @@ npm test
 | `POST` | `/api/auth/register` | Public | Реєстрація користувача |
 | `POST` | `/api/auth/login` | Public | Вхід та отримання JWT |
 | `GET` | `/api/auth/me` | Auth | Дані поточного користувача |
+| `POST` | `/api/auth/forgot-password` | Public | Надіслати лист для скидання пароля |
+| `POST` | `/api/auth/reset-password` | Public | Встановити новий пароль за reset token |
 | `GET` | `/api/books` | Public | Каталог книг (`search`, `sort`, `page`, `limit`) |
 | `GET` | `/api/books/:id` | Public | Детальна інформація про книгу |
 | `POST` | `/api/books/:id/exchange` | Auth | Надіслати власнику книги email-запит на обмін |
 | `GET` | `/api/me/books` | Auth | Список власних книг |
 | `POST` | `/api/me/books` | Auth | Додати власну книгу |
+| `PATCH` | `/api/me/books/:id` | Owner / Admin | Оновити книгу (поля `name`, `author`, `photo`) |
 | `DELETE` | `/api/books/:id` | Owner / Admin | Видалити книгу |
+| `GET` | `/api/profile` | Auth | Профіль та кількість власних книг |
+| `PATCH` | `/api/profile` | Auth | Оновити ім’я, email або URL аватара |
+| `GET` | `/api/profile/requests` | Auth | Список отриманих запитів на обмін |
+| `PATCH` | `/api/profile/requests/:id` | Власник книги | Прийняти (`accepted`) або відхилити (`rejected`) запит |
 | `GET` | `/api/admin/users` | Admin | Список користувачів |
 | `POST` | `/api/admin/users` | Admin | Створити користувача |
 | `PATCH` | `/api/admin/users/:id` | Admin | Оновити дані або роль користувача |
 | `DELETE` | `/api/admin/users/:id` | Admin | Видалити користувача |
-
-Для каталогу `search` шукає за назвою книги або автором; `sort` приймає `ASC` або `DESC`, а `page` і `limit` керують серверною пагінацією. Книги можна додавати з URL обкладинки або без фото. Запит на обмін не можна надіслати на власну книгу.

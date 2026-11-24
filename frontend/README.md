@@ -92,9 +92,11 @@ npm run lint
 | `/forgot-password` | Public | Запит на скидання пароля та встановлення нового за reset token |
 | `/books` | Public | Каталог книг із пошуком, сортуванням, пагінацією та доступними діями |
 | `/books/:id` | Public | Деталі книги, запит на обмін, видалення для власника або адміністратора |
-| `/me/books` | Auth | Список, додавання й видалення власних книг |
-| `/profile` | Auth | Перегляд і редагування профілю |
+| `/me/books` | Auth | Список, додавання, редагування й видалення власних книг |
+| `/profile` | Auth | Перегляд і редагування профілю, кількість книг та вхідні запити на обмін |
 | `/admin` | Admin | Сторінка керування користувачами |
+
+На сторінці профілю відображаються вхідні запити на обмін із контактами відправника та його книгами. Власник може прийняти або відхилити запит; після зміни статус відображається як `ACCEPTED` або `REJECTED`. Запити, що очікують рішення, мають статус `PENDING`.
 
 ## Авторизація та API
 
@@ -102,7 +104,8 @@ npm run lint
 
 - `/api/auth/register`, `/api/auth/login`, `/api/auth/me`
 - `/api/auth/forgot-password`, `/api/auth/reset-password`
-- `/api/profile` (`GET`, `PATCH`)
+- `/api/profile` (`GET`, `PATCH`), `/api/profile/requests` (`GET`), `/api/profile/requests/:id` (`PATCH`)
 - `/api/books`, `/api/books/:id`, `/api/books/:id/exchange`
-- `/api/me/books`
+- `/api/me/books` (`GET`, `POST`), `/api/me/books/:id` (`PATCH`)
 - `/api/admin/users` та `/api/admin/users/:id`
+
