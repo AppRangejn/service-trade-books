@@ -1,9 +1,14 @@
 import { Router } from 'express';
+import adminRoutes from './admin.routes';
+import authRoutes from './auth.routes';
+import bookRoutes from './book.routes';
+import meRoutes from './me.routes';
 
 const router = Router();
 
-router.get('/health', (_req, res) => {
-  res.json({ status: 'ok' });
-});
+router.use('/auth', authRoutes);
+router.use('/books', bookRoutes);
+router.use('/me', meRoutes);
+router.use('/admin', adminRoutes);
 
 export default router;

@@ -1,5 +1,8 @@
 import * as yup from 'yup';
-import { SORT_ORDER_VALUES } from '../constants';
+import { PAGINATION, SORT_ORDER_VALUES } from '../constants';
+
+const emptyStringToUndefined = (value: unknown, originalValue: unknown) =>
+  originalValue === '' ? undefined : value;
 
 export const createBookSchema = yup.object({
   body: yup.object({
@@ -18,10 +21,10 @@ export const createBookSchema = yup.object({
     photo: yup
       .string()
       .trim()
+      .transform((value) => (value === '' ? null : value))
       .url('Photo must be a valid URL')
       .nullable()
-      .optional()
-      .transform((value) => (value === '' ? null : value)),
+      .optional(),
   }),
 });
 
@@ -30,10 +33,22 @@ export const getBooksQuerySchema = yup.object({
     search: yup.string().trim().optional(),
     sort: yup
       .string()
+      .transform(emptyStringToUndefined)
       .oneOf(SORT_ORDER_VALUES, 'Sort must be ASC or DESC')
       .optional(),
-    page: yup.number().integer().min(1).optional(),
-    limit: yup.number().integer().min(1).max(50).optional(),
+    page: yup
+      .number()
+      .transform(emptyStringToUndefined)
+      .integer()
+      .min(1)
+      .optional(),
+    limit: yup
+      .number()
+      .transform(emptyStringToUndefined)
+      .integer()
+      .min(1)
+      .max(PAGINATION.MAX_LIMIT)
+      .optional(),
   }),
 });
 
